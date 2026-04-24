@@ -1,0 +1,1 @@
+self.__REACT_LOADABLE_MANIFEST='{"components/PreviewScreen.jsx -> gifshot":{"id":8074,"files":["static/chunks/74.7e94f1e4197a4f5e.js"]},"components/PreviewScreen.jsx -> qrcode":{"id":5819,"files":["static/chunks/819.c45d80067fda2482.js"]}}';

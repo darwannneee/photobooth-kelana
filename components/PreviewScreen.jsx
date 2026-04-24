@@ -52,14 +52,24 @@ async function buildCompositeBlob(frame, photos) {
 
 async function buildGIF(photos) {
   const { default: gifshot } = await import('gifshot')
+
+  // Detect actual photo dimensions to preserve aspect ratio
+  // (mobile/iPad cameras may produce portrait or non-16:9 frames)
+  const firstImg = await loadImage(photos[0])
+  const photoW = firstImg.naturalWidth
+  const photoH = firstImg.naturalHeight
+  const MAX = 480
+  const gifWidth  = photoW >= photoH ? MAX : Math.round(MAX * photoW / photoH)
+  const gifHeight = photoW >= photoH ? Math.round(MAX * photoH / photoW) : MAX
+
   return new Promise((resolve, reject) => {
     gifshot.createGIF({
       images: photos,
-      gifWidth: 480,
-      gifHeight: 270,
+      gifWidth,
+      gifHeight,
       interval: 0.7,
       numWorkers: 2,
-      sampleInterval: 10,
+      sampleInterval: 5,
     }, (obj) => {
       if (obj.error) reject(new Error(obj.errorCode))
       else resolve(obj.image) // data URL

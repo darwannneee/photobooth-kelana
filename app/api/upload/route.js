@@ -4,8 +4,8 @@ import { NextResponse } from 'next/server'
 const BUCKET = 'photobooth'
 
 export async function POST(request) {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const serviceKey  = process.env.SUPABASE_SERVICE_ROLE_KEY
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim()
+  const serviceKey  = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()
 
   if (!supabaseUrl || !serviceKey) {
     return NextResponse.json(
@@ -15,9 +15,8 @@ export async function POST(request) {
   }
 
   // Service role key bypasses all RLS — server-side only, never exposed to browser
-  const supabase = createClient(supabaseUrl, serviceKey)
-
   try {
+    const supabase = createClient(supabaseUrl, serviceKey)
     const formData = await request.formData()
     const jpegBlob = formData.get('jpeg')
     const gifBlob  = formData.get('gif')

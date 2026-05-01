@@ -50,6 +50,15 @@ async function buildCompositeBlob(frame, photos) {
   return new Promise((res) => canvas.toBlob(res, 'image/jpeg', 0.95))
 }
 
+function dataURLtoBlob(dataUrl) {
+  const [header, b64] = dataUrl.split(',')
+  const mime = header.match(/:(.*?);/)[1]
+  const binary = atob(b64)
+  const arr = new Uint8Array(binary.length)
+  for (let i = 0; i < binary.length; i++) arr[i] = binary.charCodeAt(i)
+  return new Blob([arr], { type: mime })
+}
+
 async function buildGIF(photos) {
   const { default: gifshot } = await import('gifshot')
 
@@ -71,7 +80,7 @@ async function buildGIF(photos) {
       numWorkers: 2,
       sampleInterval: 5,
     }, (obj) => {
-      if (obj.error) reject(new Error(obj.errorCode))
+      if (obj.error) reject(new Error(obj.error === true ? `GIF error ${obj.errorCode}` : obj.error))
       else resolve(obj.image) // data URL
     })
   })
@@ -131,8 +140,11 @@ export default function PreviewScreen({ frame, photos, onRetake, onRetakeAll, on
         buildGIF(photos),
       ])
 
-      // Convert GIF data URL to Blob
-      const gifBlob = await fetch(gifDataUrl).then((r) => r.blob())
+      // Convert GIF data URL to Blob (avoid fetch() — fails on Safari with invalid data URLs)
+      if (!gifDataUrl || !gifDataUrl.startsWith('data:')) {
+        throw new Error('Gagal membuat GIF: data URL tidak valid')
+      }
+      const gifBlob = dataURLtoBlob(gifDataUrl)
 
       const { jpegUrl, gifUrl } = await uploadSession(jpegBlob, gifBlob)
 
